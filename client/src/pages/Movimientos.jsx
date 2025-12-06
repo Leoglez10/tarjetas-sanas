@@ -11,6 +11,7 @@ const Movimientos = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
   const [formData, setFormData] = useState({});
 
@@ -29,6 +30,11 @@ const Movimientos = () => {
         setIngresos(ingresosRes.data);
         setTarjetas(tarjetasRes.data);
         setUsuarios(usuariosRes.data);
+        
+        // Seleccionar el primer usuario por defecto
+        if (usuariosRes.data.length > 0) {
+          setUsuarioSeleccionado(usuariosRes.data[0].id_usuario);
+        }
       } catch (error) {
         console.error('Error cargando datos:', error);
       } finally {
@@ -53,9 +59,10 @@ const Movimientos = () => {
       }
       setShowModal(false);
       setFormData({});
+      alert('✅ Movimiento registrado exitosamente');
     } catch (error) {
       console.error('Error al guardar:', error);
-      alert('Error al guardar el registro');
+      alert('❌ Error al guardar el registro: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -81,10 +88,10 @@ const Movimientos = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Movimientos</h2>
+        <h2 className="text-3xl font-bold text-gray-900">Movimientos Financieros</h2>
         <button
           onClick={openModal}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
+          className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-emerald-700 transition-all"
         >
           <Plus className="w-5 h-5 mr-2" />
           Nuevo {tab === 'compras' ? 'Gasto' : tab === 'pagos' ? 'Pago' : 'Ingreso'}
@@ -92,19 +99,19 @@ const Movimientos = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b-2 border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
+              className={`py-4 px-1 border-b-4 font-semibold text-base flex items-center transition-all ${
                 tab === t.id
                   ? 'border-emerald-500 text-emerald-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
               }`}
             >
-              <t.icon className={`w-5 h-5 mr-2 ${t.color}`} />
+              <t.icon className={`w-5 h-5 mr-3 ${t.color}`} />
               {t.label}
             </button>
           ))}
@@ -112,16 +119,16 @@ const Movimientos = () => {
       </div>
 
       {/* Lista de Movimientos */}
-      <div className="bg-white shadow overflow-hidden rounded-lg">
+      <div className="bg-white shadow-lg overflow-hidden rounded-xl">
         {tab === 'compras' && (
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MSI</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Fecha</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Descripción</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Categoría</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Monto</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">MSI</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -129,12 +136,12 @@ const Movimientos = () => {
                 <tr><td colSpan="5" className="px-6 py-10 text-center text-gray-500">No hay compras registradas</td></tr>
               ) : (
                 compras.map((c) => (
-                  <tr key={c.id_compra}>
+                  <tr key={c.id_compra} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(c.fecha).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{c.descripcion}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.categoria}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-rose-600 font-medium">-${Number(c.monto).toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.es_msi ? `${c.meses_msi} meses` : '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.categoria}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-rose-600 font-bold">-${Number(c.monto).toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.es_msi ? `${c.meses_msi} meses` : '-'}</td>
                   </tr>
                 ))
               )}
@@ -144,13 +151,13 @@ const Movimientos = () => {
 
         {tab === 'pagos' && (
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notas</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Fecha</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Tipo</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Método</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Monto</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Notas</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -158,12 +165,12 @@ const Movimientos = () => {
                 <tr><td colSpan="5" className="px-6 py-10 text-center text-gray-500">No hay pagos registrados</td></tr>
               ) : (
                 pagos.map((p) => (
-                  <tr key={p.id_pago}>
+                  <tr key={p.id_pago} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(p.fecha).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{p.tipo_pago}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.metodo}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-emerald-600 font-medium">+${Number(p.monto).toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.notas || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{p.tipo_pago}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{p.metodo}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-emerald-600 font-bold">+${Number(p.monto).toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{p.notas || '-'}</td>
                   </tr>
                 ))
               )}
@@ -173,11 +180,11 @@ const Movimientos = () => {
 
         {tab === 'ingresos' && (
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fuente</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Fecha</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Fuente</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase">Monto</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -185,10 +192,10 @@ const Movimientos = () => {
                 <tr><td colSpan="3" className="px-6 py-10 text-center text-gray-500">No hay ingresos registrados</td></tr>
               ) : (
                 ingresos.map((i) => (
-                  <tr key={i.id_ingreso}>
+                  <tr key={i.id_ingreso} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(i.fecha).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{i.fuente}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">+${Number(i.monto).toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">+${Number(i.monto).toLocaleString()}</td>
                   </tr>
                 ))
               )}
@@ -199,77 +206,80 @@ const Movimientos = () => {
 
       {/* Modal para agregar */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-medium">
-                {tab === 'compras' ? 'Registrar Compra' : tab === 'pagos' ? 'Registrar Pago' : 'Registrar Ingreso'}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+            <div className="flex items-center justify-between p-6 border-b-2 border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900">
+                {tab === 'compras' ? '🛒 Registrar Compra' : tab === 'pagos' ? '💳 Registrar Pago' : '💰 Registrar Ingreso'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 transition">
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {tab === 'compras' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tarjeta</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tarjeta *</label>
                     <select
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, id_tarjeta: Number(e.target.value) })}
                     >
-                      <option value="">Selecciona una tarjeta</option>
+                      <option value="">-- Selecciona una tarjeta --</option>
                       {tarjetas.map((t) => (
-                        <option key={t.id_tarjeta} value={t.id_tarjeta}>{t.alias} - {t.banco}</option>
+                        <option key={t.id_tarjeta} value={t.id_tarjeta}>{t.alias} ({t.banco})</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Monto</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Monto *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                      onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                      placeholder="0.00"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
+                      onChange={(e) => setFormData({ ...formData, monto: parseFloat(e.target.value) })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Descripción *</label>
                     <input
                       type="text"
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      placeholder="Ej: Compra en supermercado"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Categoría</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Categoría</label>
                     <select
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                     >
-                      <option value="Comida">Comida</option>
-                      <option value="Transporte">Transporte</option>
-                      <option value="Entretenimiento">Entretenimiento</option>
-                      <option value="Servicios">Servicios</option>
-                      <option value="Compras">Compras</option>
-                      <option value="Otro">Otro</option>
+                      <option value="Comida">🍔 Comida</option>
+                      <option value="Transporte">🚗 Transporte</option>
+                      <option value="Entretenimiento">🎬 Entretenimiento</option>
+                      <option value="Servicios">💡 Servicios</option>
+                      <option value="Compras">🛍️ Compras</option>
+                      <option value="Salud">🏥 Salud</option>
+                      <option value="Otro">📌 Otro</option>
                     </select>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <label className="flex items-center">
+                  <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg">
+                    <label className="flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        className="mr-2"
+                        className="w-4 h-4 rounded"
                         onChange={(e) => setFormData({ ...formData, es_msi: e.target.checked })}
                       />
-                      <span className="text-sm text-gray-700">Meses Sin Intereses</span>
+                      <span className="ml-2 text-sm font-medium text-gray-700">Meses Sin Intereses</span>
                     </label>
                     {formData.es_msi && (
                       <select
-                        className="border border-gray-300 rounded-md shadow-sm p-2"
+                        className="border border-gray-300 rounded-lg shadow-sm p-2 text-sm"
                         onChange={(e) => setFormData({ ...formData, meses_msi: Number(e.target.value) })}
                       >
                         <option value="3">3 meses</option>
@@ -285,53 +295,55 @@ const Movimientos = () => {
               {tab === 'pagos' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tarjeta</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tarjeta *</label>
                     <select
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, id_tarjeta: Number(e.target.value) })}
                     >
-                      <option value="">Selecciona una tarjeta</option>
+                      <option value="">-- Selecciona una tarjeta --</option>
                       {tarjetas.map((t) => (
-                        <option key={t.id_tarjeta} value={t.id_tarjeta}>{t.alias} - {t.banco}</option>
+                        <option key={t.id_tarjeta} value={t.id_tarjeta}>{t.alias} ({t.banco})</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Monto</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Monto *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                      onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                      placeholder="0.00"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
+                      onChange={(e) => setFormData({ ...formData, monto: parseFloat(e.target.value) })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tipo de Pago</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tipo de Pago</label>
                     <select
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, tipo_pago: e.target.value })}
                     >
-                      <option value="total">Pago Total</option>
-                      <option value="minimo">Pago Mínimo</option>
-                      <option value="parcial">Pago Parcial</option>
+                      <option value="total">💯 Pago Total</option>
+                      <option value="minimo">📋 Pago Mínimo</option>
+                      <option value="parcial">⚡ Pago Parcial</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Método</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Método</label>
                     <input
                       type="text"
-                      placeholder="Transferencia, Efectivo, etc."
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      placeholder="Transferencia, Efectivo, App, etc."
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, metodo: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Notas (opcional)</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Notas (opcional)</label>
                     <input
                       type="text"
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      placeholder="Ej: Pago de saldo pendiente"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
                     />
                   </div>
@@ -341,54 +353,55 @@ const Movimientos = () => {
               {tab === 'ingresos' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Usuario</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Usuario *</label>
                     <select
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, id_usuario: Number(e.target.value) })}
                     >
-                      <option value="">Selecciona quién recibió el ingreso</option>
+                      <option value="">-- ¿Quién recibió el ingreso? --</option>
                       {usuarios.map((u) => (
                         <option key={u.id_usuario} value={u.id_usuario}>{u.nombre}</option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Monto</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Monto *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                      onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                      placeholder="0.00"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
+                      onChange={(e) => setFormData({ ...formData, monto: parseFloat(e.target.value) })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Fuente</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Fuente *</label>
                     <input
                       type="text"
-                      placeholder="Sueldo, Freelance, Venta, etc."
                       required
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                      placeholder="Ej: Sueldo, Freelance, Venta"
+                      className="w-full border-2 border-gray-300 rounded-lg shadow-sm p-3 focus:border-emerald-500 focus:outline-none"
                       onChange={(e) => setFormData({ ...formData, fuente: e.target.value })}
                     />
                   </div>
                 </>
               )}
 
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="flex justify-end space-x-3 pt-6 border-t-2 border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="px-6 py-2 border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700"
+                  className="px-6 py-2 border border-transparent rounded-lg shadow-lg text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition"
                 >
-                  Guardar
+                  ✓ Guardar
                 </button>
               </div>
             </form>
