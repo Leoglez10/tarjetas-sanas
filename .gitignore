@@ -1,0 +1,19 @@
+# Tarjetas Sanas - Archivos ignorados
+
+# Dependencias
+node_modules/
+client/node_modules/
+
+# Variables de entorno (contienen contraseñas)
+.env
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos de prueba
+test-connection.js
